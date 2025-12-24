@@ -10,13 +10,13 @@ const mainPassword = 'IshanSingh1234'
 module.exports = {
     addPassword: async (req, res) => {
         try {
-            const { appPassword, serviceName, account, password } = req.body;
+            const { appPassword, serviceName, account, password } = req.body
             if (appPassword !== mainPassword) {
                 passwordLogger.log('error', 'App password is incorrect.')
                 return res.status(401).send({
                     success: false,
                     message: "App password is incorrect."
-                });
+                })
             }
             // 檢查是否重複儲存同服務的帳密
             const isPasswordNameExist = await passwordModel.findOne({
@@ -38,18 +38,20 @@ module.exports = {
             });
 
             // 如果需要密碼歷史，也要加密儲存
-            passwordData.passwordHistory = [encryptedPassword];
-            
-            await passwordData.save();
-            
-            passwordLogger.log('info', 'Password added successfully!');
+            passwordData.passwordHistory = [encryptedPassword]
+            await passwordData.save()
+            passwordLogger.log('info', 'Password added successfully!')
+            res.status(200).send({
+                success: true,
+                message: "Successfully add password!"
+            })
             } catch (error) {
                 passwordLogger.log('error', `Error: ${error.message}`)
                 return res.status(500).send({
                     success: false,
                     message: "Error occurred while adding the password.",
                     error: error.message
-                });
+                })
             }
     },
 
