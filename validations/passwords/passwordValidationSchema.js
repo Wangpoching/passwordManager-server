@@ -4,7 +4,7 @@ const joiPassword = joi.extend(joiPasswordExtendCore);
 
 const userValSchema = {
     addPassword: joi.object({
-        passwordName: joi
+        serviceName: joi
             .string()
             .max(20)
             .min(3)
@@ -15,6 +15,7 @@ const userValSchema = {
             .required(),
         password: joiPassword
             .string()
+            /*
             .minOfSpecialCharacters(1)
             .minOfLowercase(3)
             .minOfNumeric(1)
@@ -28,6 +29,7 @@ const userValSchema = {
                 'password.noWhiteSpaces': '{#label} should not contain white spaces',
                 'password.onlyLatinCharacters': '{#label} should contain only Latin characters',
             })
+            */
             .required(),
     }).unknown(true),
 };

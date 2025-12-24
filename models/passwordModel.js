@@ -1,7 +1,11 @@
 const mongoose = require('mongoose');
 
 const passwordSchema = new mongoose.Schema({
-    passwordName: {
+    serviceName: {
+        type: String,
+        required: true,
+    },
+    account: {
         type: String,
         required: true,
     },
@@ -10,15 +14,15 @@ const passwordSchema = new mongoose.Schema({
         required: true,
     },
     passwordHistory: {
-        type: [],
-        default: []
+        type: [String],
+        default: [],
     },
     isActive: {
         type: Boolean,
         default: true,
     }
+}, {
+    timestamps: true  // 建議改用這種寫法
 });
-
-passwordSchema.set('timestamps', true)
 
 module.exports = mongoose.model('password', passwordSchema);

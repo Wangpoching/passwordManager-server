@@ -1,12 +1,59 @@
-const bcrypt = require('bcrypt');
-const copyPaste = require('copy-paste');
-const generator = require('generate-password');
+const bcrypt = require('bcrypt')
+const copyPaste = require('copy-paste')
+const generator = require('generate-password')
 
 const passwordModel = require('../models/passwordModel')
 const passwordLogger = require('../utils/passwordLogger/passwordLogger')
+const encryptionUtils = require('../utils/encryption')
 
 const mainPassword = 'IshanSingh1234'
 module.exports = {
+    addPassword: async (req, res) => {
+        try {
+            const { appPassword, serviceName, account, password } = req.body;
+            if (appPassword !== mainPassword) {
+                passwordLogger.log('error', 'App password is incorrect.')
+                return res.status(401).send({
+                    success: false,
+                    message: "App password is incorrect."
+                });
+            }
+            // 檢查是否重複儲存同服務的帳密
+            const isPasswordNameExist = await passwordModel.findOne({
+                serviceName
+            });
+            if (isPasswordNameExist) {
+                passwordLogger.log('error', 'Password name already exists in the database.')
+                return res.status(400).send({
+                    success: false,
+                    message: "Password name already exists in the database."
+                });
+            }
+            // 使用 AES 加密密碼
+            const encryptedPassword = encryptionUtils.encrypt(password, appPassword);
+            
+            const passwordData = new passwordModel({
+                ...req.body,
+                password: encryptedPassword  // 儲存加密後的密碼
+            });
+
+            // 如果需要密碼歷史，也要加密儲存
+            passwordData.passwordHistory = [encryptedPassword];
+            
+            await passwordData.save();
+            
+            passwordLogger.log('info', 'Password added successfully!');
+            } catch (error) {
+                passwordLogger.log('error', `Error: ${error.message}`)
+                return res.status(500).send({
+                    success: false,
+                    message: "Error occurred while adding the password.",
+                    error: error.message
+                });
+            }
+    },
+
+    /* 
     addPassword: async (req, res) => {
         try {
             const { appPassword, passwordName, password } = req.body;
@@ -17,6 +64,7 @@ module.exports = {
                     message: "App password is incorrect."
                 });
             }
+            // 檢查是否重複儲存同服務的帳密
             const isPasswordNameExist = await passwordModel.findOne({
                 passwordName: passwordName
             });
@@ -27,6 +75,7 @@ module.exports = {
                     message: "Password name already exists in the database."
                 });
             }
+            // 使用 appPassword 建立 AES 對稱式加密要使用的 Key
             const passwordData = new passwordModel(req.body);
             const bcryptPassword = await bcrypt.hash(password, 10);
             passwordData.password = bcryptPassword;
@@ -47,6 +96,7 @@ module.exports = {
             });
         }
     },
+    */
 
     listPasswords: async (req, res) => {
         try {
